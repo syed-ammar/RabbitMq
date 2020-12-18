@@ -23,13 +23,20 @@ public class Consumer
         connectionFactory.setConnectionTimeout(3000);
         Connection connection = connectionFactory.newConnection();
         Channel channel = connection.createChannel();
+        channel.basicQos(3);
         channel.queueDeclare("new-rabbit",true,false,false,null);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             System.out.println(" [x] Received '" + message + "'");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
-        channel.basicConsume("new-rabbit", true, deliverCallback, consumerTag -> { });
+        channel.basicConsume("new-rabbit", false, deliverCallback, consumerTag -> { });
 
     }
 }

@@ -3,6 +3,7 @@ package com.sya.rb;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -20,18 +21,19 @@ public class Publisher
             connectionFactory.setConnectionTimeout(3000);
             Connection connection = connectionFactory.newConnection();
             Channel channel = connection.createChannel();
+            //marking queue as durable saves the messages in case of rabbitMq crash
             channel.queueDeclare("new-rabbit",true,false,false,null);
 
             int count = 0;
 
             while(count < 5000){
                 String message = "Message "+count;
-                channel.basicPublish("","new-rabbit",null,message.getBytes());
+                channel.basicPublish("","new-rabbit", MessageProperties.PERSISTENT_TEXT_PLAIN,message.getBytes());
                 System.out.println("Publised "+message);
                 count++;
-                Thread.sleep(5000);
+                //Thread.sleep(5000);
             }
-        } catch (URISyntaxException | IOException | TimeoutException | InterruptedException e) {
+        } catch (URISyntaxException | IOException | TimeoutException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
